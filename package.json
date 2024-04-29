@@ -1,0 +1,28 @@
+{
+  "name": "expr-def",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "go": "ts-node src/index.ts",
+    "jsonata": "node src/jsonata/go.js",
+    "build": "tsc -b",
+    "test": "tsx --test-reporter spec --test src/**/*.test.ts",
+    "test:watch": "tsx --test-reporter spec --watch --test src/**/*.test.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/jsonata": "^1.5.1",
+    "@types/lodash": "^4.17.0",
+    "jsonata": "^2.0.4",
+    "jsonlang-js": "^0.6.5",
+    "lodash": "^4.17.21",
+    "ts-node": "^10.9.2"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.1",
+    "typescript": "^5.4.5"
+  }
+}
