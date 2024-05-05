@@ -48,13 +48,16 @@ function evalExpressionDef(expr: ExpressionDef, data: Dictionary<Dictionary<Valu
     // Find values in data using provided keys
     const leftValue: Value = getValueFromKey(leftKey, data)
     const rightValue: Value = getValueFromKeyOrValue(rightKeyOrValue, data)
-    
+
     console.log('evaluating', leftValue, operation, rightValue)
     switch (operation) {
       case '=':
         return leftValue === rightValue
       case '<>':
-        return rightValue === null ? false : leftValue !== rightValue
+        //simplify undefined and <> null checks
+        return rightValue === null || rightValue === 'null'
+          ? !(leftValue === undefined || leftValue === null)
+          : leftValue !== rightValue
       case '>':
         return leftValue > rightValue
       case '<':
@@ -63,6 +66,8 @@ function evalExpressionDef(expr: ExpressionDef, data: Dictionary<Dictionary<Valu
         return leftValue >= rightValue
       case '<=':
         return leftValue <= rightValue
+      // case 'any':
+      //   return (rightValue).filter((v: Value) => leftValue === v)
       default:
         throw new Error(`Unsupported operation: ${operation}`)
     }
@@ -74,8 +79,8 @@ function evalExpressionDef(expr: ExpressionDef, data: Dictionary<Dictionary<Valu
 //fieldName | Value | RefObject
 
 //eg. file.owner_id = user.id
-export type RefObject = { ref: FieldName; type: "field" }
-export function getValueFromKey(keyOrValue: RefObject| Value|null, data: Dictionary<Dictionary<Value>>): Value {
+export type RefObject = { ref: FieldName; type: 'field' }
+export function getValueFromKey(keyOrValue: RefObject | Value | null, data: Dictionary<Dictionary<Value>>): Value {
   //Find values in data using provided keys
   if (keyOrValue instanceof Object && 'ref' in keyOrValue) {
     const { ref } = keyOrValue
@@ -84,13 +89,18 @@ export function getValueFromKey(keyOrValue: RefObject| Value|null, data: Diction
   }
 
   if (typeof keyOrValue === 'string') {
-    const [resource] = keyOrValue.split('.')
+    const [resource, path] = keyOrValue.split('.')
     const resolvedContext = getContextPath(resource, data)
-    return get(resolvedContext, keyOrValue) ?? keyOrValue ?? null
+
+    if (!path) {
+      return get(resolvedContext, keyOrValue) ?? keyOrValue
+    } else {
+      return get(resolvedContext, keyOrValue) ?? undefined
+    }
   }
 
   if (keyOrValue === null) {
-  return keyOrValue
+    return keyOrValue
   }
 }
 
