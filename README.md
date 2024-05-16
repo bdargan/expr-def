@@ -1,4 +1,4 @@
-# Exploration of [How We Built a Custom Permissions DSL at Figma | Figma Blog](https://www.figma.com/blog/how-we-rolled-out-our-own-permissions-dsl-at-figma/)
+# Exploration of custom permissions and authorization based on [How We Built a Custom Permissions DSL at Figma | Figma Blog](https://www.figma.com/blog/how-we-rolled-out-our-own-permissions-dsl-at-figma/)
 
 Goal to see how policies in code (or maybe JSON DSL) may be evaluated in a variety of locations within a stack. Database loader and context path should obscure implementation details and support table or JSON based data forms. 
 Examples should be provided that prove useful for REST or GraphQL needs, such as denied fields.
