@@ -11,6 +11,6 @@ export class AllowViewByShareWithUser implements Policy {
     this.resourceType = 'file'
     this.effect = 'allow'
     this.permissions = [FilePermission.can_view]
-    this.applyFilter = ['user', '=', 'file.shared_viewers']
+    this.applyFilter = ['user', 'in', 'file.shared_viewers']
   }
 }

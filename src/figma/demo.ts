@@ -32,8 +32,9 @@ const aliceFile: File = {
   name: 'File 1',
   url: 'https://file1.com',
   team_id: 'team3',
-  org_id: 'org6', 
-  owner_id: 'alice'
+  org_id: 'org6',
+  owner_id: 'alice',
+  shared_viewers: ['guest']
 }
 
 //Principal represents a user, or a role or group
@@ -45,9 +46,16 @@ const alice: User = {
 }
 
 const guest: User = {
-  id: '3',
+  id: 'guest',
   type: 'user',
   email: 'guest',
+  team_id: null
+}
+
+const guest_2: User = {
+  id: 'guest_2',
+  type: 'user',
+  email: 'guest2',
   team_id: null
 }
 
@@ -59,21 +67,21 @@ const inactiveUser: User = {
   deleted_at: new Date()
 }
 const permissionChecks: PermissionCheck[] = [
-  // {
-  //   name: 'allow owner view file 1?',
-  //   checkFn: () => hasPermission(aliceFile, alice, FilePermission.can_view),
-  //   expected: true
-  // },
-  // {
-  //   name: 'deny guest view file owned by another',
-  //   checkFn: () => hasPermission(aliceFile, guest, FilePermission.can_view),
-  //   expected: false
-  // },
-  // {
-  //   name: 'deny deleted user from view file',
-  //   checkFn: () => hasPermission(aliceFile, inactiveUser, FilePermission.can_view),
-  //   expected: false
-  // },
+  {
+    name: 'allow owner view file 1?',
+    checkFn: () => hasPermission(aliceFile, alice, FilePermission.can_view),
+    expected: true
+  },
+  {
+    name: 'deny guest view unshared file owned by another',
+    checkFn: () => hasPermission(aliceFile, guest_2, FilePermission.can_view),
+    expected: false
+  },
+  {
+    name: 'deny deleted user from view file',
+    checkFn: () => hasPermission(aliceFile, inactiveUser, FilePermission.can_view),
+    expected: false
+  },
   {
     name: 'allow user to view a file shared by another',
     checkFn: () => hasPermission(aliceFile, guest, FilePermission.can_view),

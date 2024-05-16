@@ -4,11 +4,7 @@ export type FieldName = string //"user" | "file" & DocumentFields & FileFields
 export type Value = string | boolean | number | Date | null;
 
 export type ExpressionArgumentRef = { type: 'field'; ref: FieldName }
-export type BinaryExpressionDef = [
-  FieldName,
-  '='| '<>' | '>' | '<' | '>=' | '<=',
-  Value | ExpressionArgumentRef,
-]
+export type BinaryExpressionDef = [FieldName, '=' | '<>' | '>' | '<' | '>=' | '<=' | 'in', Value | ExpressionArgumentRef]
 
 
 export type OrExpressionDef = {
@@ -39,17 +35,16 @@ export enum FilePermission {
 }
 
 export enum DocumentPermission {
-  can_edit = "can_edit",
-  can_view = "can_view",
-  can_comment = "can_comment",
-  can_share = "can_share",
-  can_export = "can_export",
-  can_invite = "can_invite",
-  can_manage = "can_manage",
-  can_view_version_history = "can_view_version_history",
-  can_view_design_system = "can_view_design_system",
-  can_view_design = "can_view_design",
-
+  can_edit = 'can_editCon',
+  can_view = 'can_view',
+  can_comment = 'can_comment',
+  can_share = 'can_share',
+  can_export = 'can_export',
+  can_invite = 'can_invite',
+  can_manage = 'can_manage',
+  can_view_version_history = 'can_view_version_history',
+  can_view_design_system = 'can_view_design_system',
+  can_view_design = 'can_view_design'
 }
 
 export interface Policy {

@@ -7,9 +7,9 @@ import { ExpressionDef, Value } from "./model";
 describe("applyEvaluator", () => {
   describe("getValueFromKey", () => {
     it("should return value from key", () => {
-      const data: Dictionary<Dictionary<Value>> = {
+      const data: Dictionary<Dictionary<Value | Value[]>> = {
         user: {
-          id: "rick"
+          id: 'rick'
         }
       }
       assert.equal(getValueFromKey("user", data), data.user.id)
@@ -17,24 +17,24 @@ describe("applyEvaluator", () => {
   })
   describe("getValueFromKeyOrValue", () => {
     it("should return value from key ref", () => {
-      const data: Dictionary<Dictionary<Value>> = {
+      const data: Dictionary<Dictionary<Value | Value[]>> = {
         user: {
-          id: "rick"
+          id: 'rick'
         },
         file: {
-          owner_id: "rick"
+          owner_id: 'rick'
         }
       }
       //{ref: "user.id", type: "field"}
       assert.equal(getValueFromKeyOrValue({ref: "file.owner", type: 'field'}, data), data.user.id)
     });
     it("should return value from file key", () => {
-      const data: Dictionary<Dictionary<Value>> = {
+      const data: Dictionary<Dictionary<Value | Value[]>> = {
         user: {
-          id: "rick"
+          id: 'rick'
         },
         file: {
-          owner_id: "rick"
+          owner_id: 'rick'
         }
       }
       //{ref: "user.id", type: "field"}
@@ -56,7 +56,7 @@ describe("applyEvaluator", () => {
     })
     it('should evaluate equality expression with data value', () => {
       const expr: ExpressionDef = ['user', '=', 'rick']
-      const data: Dictionary<Dictionary<Value>> = {
+      const data: Dictionary<Dictionary<Value | Value[]>> = {
         user: {
           id: 'morty'
         }
@@ -66,7 +66,7 @@ describe("applyEvaluator", () => {
     })
     it('should evaluate equality expression with unequal data value', () => {
       const expr: ExpressionDef = ['user', '=', 'rick']
-      const data: Dictionary<Dictionary<Value>> = {
+      const data: Dictionary<Dictionary<Value | Value[]>> = {
         user: {
           id: 'morty'
         }

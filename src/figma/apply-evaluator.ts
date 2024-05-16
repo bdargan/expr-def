@@ -9,7 +9,7 @@ export interface Dictionary<T> {
 export class ApplyEvaluator {
   constructor() {}
 
-  public static evaluate(expression: ExpressionDef, data: Dictionary<Dictionary<Value>>): boolean {
+  public static evaluate(expression: ExpressionDef, data: Dictionary<Dictionary<Value | Value[]>>): boolean {
     console.log('evaluate', JSON.stringify(expression, null, 2), JSON.stringify(data, null, 2))
     return evalExpressionDef(expression, data)
   }
@@ -29,7 +29,7 @@ export function isBinaryExpr(expr: ExpressionDef): expr is BinaryExpressionDef {
   return (expr as BinaryExpressionDef).length === 3
 }
 
-function evalExpressionDef(expr: ExpressionDef, data: Dictionary<Dictionary<Value>>): boolean {
+function evalExpressionDef(expr: ExpressionDef, data: Dictionary<Dictionary<Value | Value[]>>): boolean {
   // Recursively walk through ExpressionDefs
   if (isAndExpr(expr)) {
     return expr.and.every((subExpr: ExpressionDef) => evalExpressionDef(subExpr, data))
@@ -46,8 +46,9 @@ function evalExpressionDef(expr: ExpressionDef, data: Dictionary<Dictionary<Valu
     const [leftKey, operation, rightKeyOrValue] = expr
 
     // Find values in data using provided keys
-    const leftValue: Value = getValueFromKey(leftKey, data)
-    const rightValue: Value = getValueFromKeyOrValue(rightKeyOrValue, data)
+    // do we avoid supporting arrays in left value?
+    const leftValue: Value | Value[] = getValueFromKey(leftKey, data)
+    const rightValue: Value | Value[] = getValueFromKeyOrValue(rightKeyOrValue, data)
 
     console.log('evaluating', leftValue, operation, rightValue)
     switch (operation) {
@@ -66,6 +67,14 @@ function evalExpressionDef(expr: ExpressionDef, data: Dictionary<Dictionary<Valu
         return leftValue >= rightValue
       case '<=':
         return leftValue <= rightValue
+      case 'in':
+        if (!Array.isArray(rightValue)) {
+          throw new Error('Right value must be an array')
+        }
+        if (Array.isArray(leftValue)) {
+          throw new Error('Left value must be scalar')
+        }
+        return (rightValue as Value[]).includes(leftValue)
       // case 'any':
       //   return (rightValue).filter((v: Value) => leftValue === v)
       default:
@@ -80,7 +89,10 @@ function evalExpressionDef(expr: ExpressionDef, data: Dictionary<Dictionary<Valu
 
 //eg. file.owner_id = user.id
 export type RefObject = { ref: FieldName; type: 'field' }
-export function getValueFromKey(keyOrValue: RefObject | Value | null, data: Dictionary<Dictionary<Value>>): Value {
+export function getValueFromKey(
+  keyOrValue: RefObject | Value | null,
+  data: Dictionary<Dictionary<Value | Value[]>>
+): Value | Value[] {
   //Find values in data using provided keys
   if (keyOrValue instanceof Object && 'ref' in keyOrValue) {
     const { ref } = keyOrValue
@@ -104,7 +116,10 @@ export function getValueFromKey(keyOrValue: RefObject | Value | null, data: Dict
   }
 }
 
-export function getValueFromKeyOrValue(keyOrValue: RefObject| Value|null, data: Dictionary<Dictionary<Value>>): Value {
+export function getValueFromKeyOrValue(
+  keyOrValue: RefObject | Value | null,
+  data: Dictionary<Dictionary<Value | Value[]>>
+): Value | Value[] {
   //Find values in data using provided keys
   if (keyOrValue instanceof Object && 'ref' in keyOrValue) {
     const { ref } = keyOrValue
@@ -123,7 +138,7 @@ export function getValueFromKeyOrValue(keyOrValue: RefObject| Value|null, data: 
   }
 
   if (keyOrValue === null) {
-  return keyOrValue
+    return keyOrValue
   }
 }
 

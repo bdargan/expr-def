@@ -19,8 +19,8 @@ export type PermissionResult = boolean //|[boolean, PermissionEvaluationResult]
 export type HasPermissionReturnType = Promise<PermissionResult>
 
 // merging these to help identify resources to load
-export const resolveContext = (resource: File, user: User): Dictionary<Value> => {
-  const context: Dictionary<Value> = {...fileContextPath(resource), ...userContextPath(user) }
+export const resolveContext = (resource: File, user: User): Dictionary<Value | Value[]> => {
+  const context: Dictionary<Value | Value[]> = { ...fileContextPath(resource), ...userContextPath(user) }
 
   if (context['org'] && context['user']) {
     // context['org_user'] = [context['org'], context['user']]
@@ -31,20 +31,24 @@ export const resolveContext = (resource: File, user: User): Dictionary<Value> =>
   return context
 }
 
-export const hasPermission: PermissionFn = async (resource: File, user: User, permission: Permission): Promise<PermissionResult> => {
-
+export const hasPermission: PermissionFn = async (
+  resource: File,
+  user: User,
+  permission: Permission
+): Promise<PermissionResult> => {
   // console.log('hasPermission', resource, user, permission)
-  
-  const resolvedContext = {file: {...resource} as Dictionary<Value>, user: {...user} as Dictionary<Value>} //resolveContext(resource, user)
-  const policies = ALL_POLICIES
-         .filter((p: Policy) => p.permissions.includes(permission))
-  
+
+  const resolvedContext = {
+    file: { ...resource } as Dictionary<Value | Value[]>,
+    user: { ...user } as Dictionary<Value>
+  } //resolveContext(resource, user)
+  const policies = ALL_POLICIES.filter((p: Policy) => p.permissions.includes(permission))
 
   const resourcesToLoad = policies.reduce((memo, p) => {
     const dataDependencies = parseDependences(p.applyFilter)
-    return {...memo, ...dataDependencies}
+    return { ...memo, ...dataDependencies }
   })
-  
+
   // ["file.deleted_at", "<>", null]
 
   const loadedResources = resolvedContext //await DatabaseLoader.loadAll(resourcesToLoad)
@@ -52,22 +56,34 @@ export const hasPermission: PermissionFn = async (resource: File, user: User, pe
 
   // Bisect policies into DENY and ALLOW policies
   const [denyPolicies, allowPolicies] = policies
-                      .map((p:Policy) => p.effect === DENY ? [p, null] : [null, p])
-                      .reduce((memo, [deny, allow]) => {
-                        return [ [...memo[0], deny].filter((p) => !!p), [...memo[1], allow].filter((p) => !!p) ]
-                      }, [[], []])
+    .map((p: Policy) => (p.effect === DENY ? [p, null] : [null, p]))
+    .reduce(
+      (memo, [deny, allow]) => {
+        return [[...memo[0], deny].filter((p) => !!p), [...memo[1], allow].filter((p) => !!p)]
+      },
+      [[], []]
+    )
 
-  console.log('deny policies', denyPolicies?.map((p: Policy) => p.description))
-  console.log('allow policies', allowPolicies?.map((p: Policy) => p.description)) 
+  console.log(
+    'deny policies',
+    denyPolicies?.map((p: Policy) => p.description)
+  )
+  console.log(
+    'allow policies',
+    allowPolicies?.map((p: Policy) => p.description)
+  )
   // Return false if any of the DENY policies evaluate to true
   const shouldDeny = denyPolicies.some((p: Policy) => {
-    return ApplyEvaluator.evaluate(p.applyFilter, loadedResources )
+    return ApplyEvaluator.evaluate(p.applyFilter, loadedResources)
   })
-  if (shouldDeny) { console.log('shouldDeny'); return false }
+  if (shouldDeny) {
+    console.log('shouldDeny')
+    return false
+  }
 
   // Return true if any of the ALLOW policies evaluate to true
   return allowPolicies.some((p: Policy) => {
-     return ApplyEvaluator.evaluate( p.applyFilter, loadedResources)
+    return ApplyEvaluator.evaluate(p.applyFilter, loadedResources)
   })
 }
 
